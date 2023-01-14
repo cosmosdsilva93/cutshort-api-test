@@ -14,6 +14,11 @@ const signUp = (async (req, res) => {
             throw new Error('Password is required!')
         }
         console.log('Got required data..');
+        console.log('Checking if user already exists..');
+        const existingUser = await users.getUserByEmail(req.body.email);
+        if (Object.keys(existingUser).length > 0) {
+            throw new Error('Looks like your account already exists. Please login.')
+        }
         console.log('Creating user in db..');
         const user = await users.create(req.body);
         console.log('Created user in db..');
@@ -35,7 +40,11 @@ const signUp = (async (req, res) => {
     }
 })
 
+const login = (async (req, res) => {
+
+});
 
 module.exports = {
-    signUp
+    signUp,
+    login
 }
