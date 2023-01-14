@@ -1,8 +1,6 @@
 const jwt = require('jsonwebtoken');
 const users = require('../models/users');
 
-
-
 const signUp = (async (req, res) => {
     let response = {
         success: true
