@@ -37,7 +37,24 @@ const getUserByEmail = async(email) => {
     }
 }
 
+const get = async(userdata) => {
+    try {
+        let response = {};
+        const password = md5(userdata.password);
+        let getUser = await users.where('email', '==', userdata.email).where('password', '==', password).where('status', '==', 0).limit(1).get();
+        getUser.forEach((doc) => {
+            response = doc.data();
+            response.uid = doc.id;
+            delete response.password;
+        });
+        return response;
+    } catch (error) {
+        throw error; 
+    }
+}
+
 module.exports = {
     create,
+    get,
     getUserByEmail
 }
