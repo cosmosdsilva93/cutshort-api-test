@@ -3,7 +3,7 @@ const moment = require('moment');
 const {uid} = require('uid');
 
 const db = firestore.dbConnect();
-const users = db.collection('todos');
+const todos = db.collection('todos');
 
 
 const create = async (data) => {
@@ -12,7 +12,7 @@ const create = async (data) => {
         data.created_on = moment().format('YYYY-MM-DD HH:mm:ss')
         data.status = 0
         data.completed = 0
-        await users.doc(todoId).set(data, {merge: true});
+        await todos.doc(todoId).set(data, {merge: true});
         data = await getById(todoId);
         return data;
     } catch (error) {
@@ -25,7 +25,7 @@ const update = async (data) => {
         const todoId = data.id;
         delete data.id;
         data.updated_on = moment().format('YYYY-MM-DD HH:mm:ss');
-        await users.doc(todoId).update(data);
+        await todos.doc(todoId).update(data);
         data = await getById(todoId);
         return data;
     } catch (error) {
@@ -39,7 +39,7 @@ const deelete = async (data) => {
         delete data.id;
         data.updated_on = moment().format('YYYY-MM-DD HH:mm:ss');
         data.status = 1;
-        await users.doc(todoId).update(data);
+        await todos.doc(todoId).update(data);
         data.id = todoId;
         return data;
     } catch (error) {
@@ -47,16 +47,19 @@ const deelete = async (data) => {
     }
 }
 
-const get = async(userdata) => {
+const get = async(userId) => {
     try {
         let response = {};
-        const password = md5(userdata.password);
-        let getUser = await users.where('email', '==', userdata.email).where('password', '==', password).where('status', '==', 0).limit(1).get();
-        getUser.forEach((doc) => {
-            response = doc.data();
-            response.uid = doc.id;
-            delete response.password;
+        let allTodos = [];
+        const getTodos = await todos.where('created_by', '==', userId).where('status', '==', 0).get();
+        getTodos.forEach((doc) => {
+            const todo = doc.data();
+            todo.id = doc.id;
+            allTodos.push(todo)
         });
+        if (allTodos.length > 0) {
+            response.todos = allTodos;
+        }
         return response;
     } catch (error) {
         throw error; 
@@ -66,7 +69,7 @@ const get = async(userdata) => {
 const getById = async (uid) => {
     try {
         let response = {};
-        let getTodo = await users.doc(uid).get();
+        let getTodo = await todos.doc(uid).get();
         if (getTodo.exists) {
             const todoData = getTodo.data();
             if (!todoData.status) {
@@ -80,10 +83,26 @@ const getById = async (uid) => {
     }
 }
 
+const getTodosByUserId = async (userId) => {
+    try {
+        let response = [];
+        const getTodos = await todos.where('created_by', '==', userId).where('status', '==', 0).get();
+        getTodos.forEach((doc) => {
+            const todo = doc.data();
+            todo.id = doc.id;
+            response.push(todo)
+        });
+        return response;
+    } catch (error) {
+        throw error; 
+    }
+}
+
 module.exports = {
     get,
     create,
     update,
     deelete,
-    getById
+    getById,
+    getTodosByUserId
 }

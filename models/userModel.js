@@ -53,8 +53,47 @@ const get = async(userdata) => {
     }
 }
 
+const getAllUsers = async() => {
+    try {
+        let response = {};
+        let allUsers = [];
+        const getUsers = await users.where('status', '==', 0).get();
+        getUsers.forEach((doc) => {
+            const user = doc.data();
+            user.uid = doc.id;
+            allUsers.push(user)
+        });
+        if (allUsers.length > 0) {
+            response.users = allUsers;
+        }
+        return response;
+    } catch (error) {
+        throw error; 
+    }
+}
+
+const getUserById = async (id) => {
+    try {
+        let response = {};
+        let getUser = await users.doc(id).get();
+        if (getUser.exists) {
+            const userData = getUser.data();
+            if (!userData.status) {
+                response = userData;
+                response.uid = id;
+            }
+        }
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
+
+
 module.exports = {
     create,
     get,
-    getUserByEmail
+    getUserByEmail,
+    getAllUsers,
+    getUserById
 }
