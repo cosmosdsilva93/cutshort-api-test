@@ -7,7 +7,9 @@ const router = express.Router();
 router.post('/sign-up', authController.signUp);
 router.post('/login', authController.login);
 
-router.post('/todos/create', appController.createTodo);
+router.post('/todo', appController.createTodo);
+router.patch('/todo/:id', appController.updateTodo);
+router.delete('/todo/:id', appController.deleteTodo);
 
 
 
