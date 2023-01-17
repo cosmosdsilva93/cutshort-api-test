@@ -14,7 +14,7 @@ const createTodo = (async (req, res) => {
         console.log('Got required data..');
         const todoData = {
             title: req.body.title,
-            created_by: ''
+            created_by: req.user.uid
         }
         console.log('Saving data to db..');
         const create_todo = await todos.create(todoData);
@@ -35,6 +35,7 @@ const updateTodo = (async (req, res) => {
         success: true
     }
     try {
+        // console.log(req.user);
         console.log('Formdata -->', req.body);
         if (!req.params.id) {
             throw new Error('Id is required!')
@@ -45,10 +46,17 @@ const updateTodo = (async (req, res) => {
         console.log('Got required data..');
         console.log('Checking if todo exists..');
         const getTodo = await todos.getById(req.params.id);
+        // console.log(getTodo);
         if (!Object.keys(getTodo).length) {
             throw new Error('Todo does not exists!');
         }
         console.log('Todo exists..');
+        if (!req.user.admin) {
+            if (req.user.uid != getTodo.created_by) {
+                res.status(403).send('Unauthorized!')   
+                return;
+            }
+        }
         const todoData = {
             id: req.params.id,
         }
@@ -87,6 +95,12 @@ const deleteTodo = (async (req, res) => {
             throw new Error('Todo does not exists!');
         }
         console.log('Todo exists..');
+        if (!req.user.admin) {
+            if (req.user.uid != getTodo.created_by) {
+                res.status(403).send('Unauthorized!')  
+                return; 
+            }
+        }
         const todoData = {
             id: req.params.id
         }
@@ -110,7 +124,7 @@ const getTodos = (async (req, res) => {
     }
     try {
         console.log('Getting all todos..');
-        const getTodos = await todos.get('');
+        const getTodos = await todos.get(req.user.uid);
         if (!Object.keys(getTodos).length) {
             throw new Error('Todos does not exists!');
         }
@@ -137,7 +151,7 @@ const createPost = (async (req, res) => {
         console.log('Got required data..');
         const postData = {
             text: req.body.text,
-            created_by: ''
+            created_by: req.user.uid
         }
         console.log('Saving data to db..');
         const create_post = await posts.create(postData);
@@ -248,7 +262,7 @@ const getUsers = (async (req, res) => {
         const usersArr = getUsers.users;
         const allUsers = [];
         for (let user of usersArr) {
-            const todos_and_posts = await getAllUserDataById('');
+            const todos_and_posts = await getAllUserDataById(user.uid);
             user = {...user, ...todos_and_posts}
             allUsers.push(user);
         }
@@ -276,7 +290,7 @@ const getUserById = (async (req, res) => {
         response.user = getUser
         console.log('User exists..');
         console.log('Getting user todos and posts..');
-        const todos_and_posts = await getAllUserDataById('');
+        const todos_and_posts = await getAllUserDataById(response.user.uid);
         response.user = {...response.user, ...todos_and_posts};
         res.status(200).send(response);
     } catch (error) {

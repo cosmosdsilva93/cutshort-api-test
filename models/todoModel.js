@@ -47,11 +47,11 @@ const deelete = async (data) => {
     }
 }
 
-const get = async(userId) => {
+const get = async(uid) => {
     try {
         let response = {};
         let allTodos = [];
-        const getTodos = await todos.where('created_by', '==', userId).where('status', '==', 0).get();
+        const getTodos = await todos.where('created_by', '==', uid).where('status', '==', 0).get();
         getTodos.forEach((doc) => {
             const todo = doc.data();
             todo.id = doc.id;

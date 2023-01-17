@@ -128,10 +128,10 @@ const getCommentsByPostId = async (postId) => {
     }
 }
 
-const getPostsByUserId = async (userId) => {
+const getPostsByUserId = async (uid) => {
     try {
         let response = [];
-        const getPosts = await posts.where('created_by', '==', userId).where('status', '==', 0).get();
+        const getPosts = await posts.where('created_by', '==', uid).where('status', '==', 0).get();
         getPosts.forEach((doc) => {
             const post = doc.data();
             post.id = doc.id;
