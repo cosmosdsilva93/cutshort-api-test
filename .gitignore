@@ -1,2 +1,2 @@
 node_modules/*
-auth-files/*
+#auth-files/*
